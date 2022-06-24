@@ -18,14 +18,12 @@ import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import scala.Tuple2;
 
-import java.util.concurrent.TimeUnit;
 
 public class FlinkUVRecorder {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.STREAMING);
-        DataStream<String> stream = env.socketTextStream("127.0.0.1", 8082);
-        //DataStream<String> stream = env.addSource(new FlinkDataProvider("source.txt"));
+        DataStream<String> stream = env.socketTextStream(args[0], Integer.parseInt(args[1]));
         SingleOutputStreamOperator<String> streamPair = stream.flatMap(new FlatMapFunction<String, Tuple2<String, Long>>() {
             @Override
             public void flatMap(String s, Collector<Tuple2<String, Long>> collector) throws Exception {
@@ -35,7 +33,6 @@ public class FlinkUVRecorder {
             }
         }).keyBy(s -> s._1).process(new Deduplicator());
         streamPair.writeAsText("flink_uv_output_" + System.currentTimeMillis() + ".txt", FileSystem.WriteMode.OVERWRITE).setParallelism(1);
-        //streamPair.print();
         JobExecutionResult result = env.execute("Flink UV Recorder");
     }
 

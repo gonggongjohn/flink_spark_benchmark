@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +12,9 @@ import java.util.Random;
 
 public class SocketDataProvider {
     public static void main(String[] args) throws IOException, InterruptedException {
-        ServerSocket serverSocket = new ServerSocket(8082);
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        ServerSocket serverSocket = new ServerSocket(port, 50, InetAddress.getByName(host));
         Random random = new Random();
         Socket socket = serverSocket.accept();
         OutputStream writer = socket.getOutputStream();
